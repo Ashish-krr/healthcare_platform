@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Bed Availability - Healthcare Platform</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-hospital"></i> Healthcare Platform
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="fas fa-user-circle"></i> Welcome, User
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid main-content">
+        <!-- Header Section with Controls -->
+        <div class="controls-section">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h2 class="page-title">
+                        <i class="fas fa-hospital-alt"></i> Hospital Bed Availability
+                    </h2>
+                </div>
+                
+                <!-- Bed Type Toggle -->
+                <div class="col-md-4 text-center">
+                    <div class="bed-type-toggle">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="bedType" id="normalBed" checked>
+                            <label class="btn btn-outline-primary" for="normalBed">
+                                <i class="fas fa-bed"></i> Normal Beds
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="bedType" id="emergencyBed">
+                            <label class="btn btn-outline-danger" for="emergencyBed">
+                                <i class="fas fa-ambulance"></i> Emergency Beds
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sort and Filter Options -->
+                <div class="col-md-4 text-end">
+                    <div class="dropdown d-inline-block me-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-sort"></i> Sort By
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="sortHospitals('distance')">Distance</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortHospitals('beds')">Available Beds</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="sortHospitals('name')">Hospital Name</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-success" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Location and Search Bar -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                        <input type="text" class="form-control" id="userLocation" 
+                               placeholder="Enter your location or use current location" value="New Delhi">
+                        <button class="btn btn-primary" onclick="getUserLocation()">
+                            <i class="fas fa-location-arrow"></i> Current Location
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchInput" 
+                               placeholder="Search hospitals..." onkeyup="searchHospitals(this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row stats-cards mt-4">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-hospital fa-2x text-primary mb-2"></i>
+                    <h3 id="totalHospitals">15</h3>
+                    <p>Total Hospitals</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-bed fa-2x text-success mb-2"></i>
+                    <h3 id="totalBeds">1,250</h3>
+                    <p>Available Beds</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-ambulance fa-2x text-danger mb-2"></i>
+                    <h3 id="emergencyBeds">85</h3>
+                    <p>Emergency Beds</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-route fa-2x text-info mb-2"></i>
+                    <h3 id="nearestDistance">2.5 km</h3>
+                    <p>Nearest Hospital</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hospital Cards Grid -->
+        <div class="row" id="hospitalContainer">
+            <!-- Hospital Card 1 -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="2.5" data-beds="45" data-name="AIIMS Delhi">
+                <div class="hospital-card">
+                    <div class="card-status-badge">
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">AIIMS Delhi</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star-half-alt text-warning"></i>
+                            <span class="ms-1">4.5</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Ansari Nagar, New Delhi</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>2.5 km</strong>
+                                    <small>8 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>45/500</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">9%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" style="width: 9%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <span>Emergency: 5 beds available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('AIIMS Delhi')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.5672,77.2100')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-success" onclick="bookBed('AIIMS Delhi')">
+                                <i class="fas fa-calendar-check"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated 2 mins ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Card 2 -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="5.8" data-beds="120" data-name="Fortis Hospital">
+                <div class="hospital-card">
+                    <div class="card-status-badge">
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">Fortis Hospital</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <span class="ms-1">4.0</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Vasant Kunj, New Delhi</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>5.8 km</strong>
+                                    <small>15 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>120/350</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">34%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: 34%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-success"></i>
+                            <span>Emergency: 15 beds available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('Fortis Hospital')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.5245,77.1545')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-success" onclick="bookBed('Fortis Hospital')">
+                                <i class="fas fa-calendar-check"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated 5 mins ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Card 3 -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="8.2" data-beds="200" data-name="Max Hospital">
+                <div class="hospital-card">
+                    <div class="card-status-badge">
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">Max Super Speciality Hospital</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <span class="ms-1">5.0</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Saket, New Delhi</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>8.2 km</strong>
+                                    <small>22 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>200/400</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">50%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-success"></i>
+                            <span>Emergency: 25 beds available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('Max Hospital')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.5274,77.2184')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-success" onclick="bookBed('Max Hospital')">
+                                <i class="fas fa-calendar-check"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated just now
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Card 4 - Low Availability -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="10.5" data-beds="5" data-name="Apollo Hospital">
+                <div class="hospital-card low-availability">
+                    <div class="card-status-badge">
+                        <span class="badge bg-danger">Critical</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">Apollo Hospital</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star-half-alt text-warning"></i>
+                            <span class="ms-1">4.5</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Jasola, New Delhi</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>10.5 km</strong>
+                                    <small>28 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>5/300</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">2%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" style="width: 2%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                            <span>Emergency: 1 bed available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('Apollo Hospital')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.5386,77.2836')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-warning" onclick="bookBed('Apollo Hospital')">
+                                <i class="fas fa-calendar-check"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated 10 mins ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Card 5 -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="12.3" data-beds="80" data-name="Medanta Hospital">
+                <div class="hospital-card">
+                    <div class="card-status-badge">
+                        <span class="badge bg-success">Available</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">Medanta - The Medicity</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <span class="ms-1">4.2</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Sector 38, Gurgaon</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>12.3 km</strong>
+                                    <small>35 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>80/250</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">32%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: 32%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-success"></i>
+                            <span>Emergency: 20 beds available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('Medanta Hospital')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.4395,77.0419')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-success" onclick="bookBed('Medanta Hospital')">
+                                <i class="fas fa-calendar-check"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated 15 mins ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Card 6 - No Availability -->
+            <div class="col-lg-4 col-md-6 mb-4 hospital-item" data-distance="15.0" data-beds="0" data-name="BLK Hospital">
+                <div class="hospital-card no-availability">
+                    <div class="card-status-badge">
+                        <span class="badge bg-dark">Full</span>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="hospital-name">BLK Super Speciality Hospital</h5>
+                        <div class="hospital-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star-half-alt text-warning"></i>
+                            <i class="far fa-star text-warning"></i>
+                            <span class="ms-1">3.5</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            <span>Pusa Road, New Delhi</span>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <strong>15.0 km</strong>
+                                    <small>40 mins</small>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-bed"></i>
+                                <div>
+                                    <strong>0/280</strong>
+                                    <small>Normal Beds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bed-availability-bar">
+                            <div class="availability-label">
+                                <span>Bed Availability</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-dark" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="emergency-info">
+                            <i class="fas fa-exclamation-triangle text-dark"></i>
+                            <span>Emergency: No beds available</span>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showHospitalDetails('BLK Hospital')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections('28.6389,77.1784')">
+                                <i class="fas fa-directions"></i> Directions
+                            </button>
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-calendar-times"></i> Full
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Updated 20 mins ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-4 mb-5">
+            <button class="btn btn-outline-primary btn-lg" onclick="loadMoreHospitals()">
+                <i class="fas fa-plus-circle"></i> Load More Hospitals
+            </button>
+        </div>
+    </div>
+
+    <!-- Hospital Details Modal -->
+    <div class="modal fade" id="hospitalDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalHospitalName">Hospital Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>General Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Type:</strong> Multi-Speciality</li>
+                                <li><strong>Emergency:</strong> 24/7 Available</li>
+                                <li><strong>ICU Beds:</strong> 25 Available</li>
+                                <li><strong>Ventilators:</strong> 10 Available</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Contact Information</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-phone"></i> +91-11-12345678</li>
+                                <li><i class="fas fa-envelope"></i> info@hospital.com</li>
+                                <li><i class="fas fa-globe"></i> www.hospital.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Departments Available</h6>
+                    <div class="departments-grid">
+                        <span class="badge bg-info me-2 mb-2">Cardiology</span>
+                        <span class="badge bg-info me-2 mb-2">Neurology</span>
+                        <span class="badge bg-info me-2 mb-2">Orthopedics</span>
+                        <span class="badge bg-info me-2 mb-2">Pediatrics</span>
+                        <span class="badge bg-info me-2 mb-2">Oncology</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="bookAppointment()">Book Appointment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action-button">
+        <button class="btn btn-danger btn-lg rounded-circle" onclick="showEmergency()">
+            <i class="fas fa-exclamation-triangle"></i>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
